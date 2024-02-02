@@ -1,0 +1,41 @@
+{
+  "strategy": "zero_shot",
+  "prompt_prefix": "create table photoLocation (\n    ID integer primary key autoincrement,\n    longitude decimal(11,8) not null,\n    latitude decimal(11,8) not null\n);\n\ncreate table photo (\n\tID integer primary key autoincrement,\n    dateAndTime datetime,\n    locationID int,\n    deviceType varchar(20),\n    dataType varchar(6) not null,\n    foreign key (locationID) references photoLocation (ID)\n);\n\n\ncreate table person (\n    ID integer primary key autoincrement,\n    firstName varchar(20) not null,\n    lastName varchar(20) not null\n);\n\ncreate table personInPhoto (\n    personID int,\n    photoID int,\n    foreign key (personID) references person (ID),\n    foreign key (photoID) references photo (ID),\n    primary key (personID, photoID)\n);\n\ncreate table album (\n    ID integer primary key autoincrement,\n    albumName varchar(20) not null unique\n);\n\ncreate table photoInAlbum (\n    photoID int,\n    albumID int,\n    foreign key (photoID) references photo (ID),\n    foreign key (albumID) references album (ID),\n    primary key (photoID, albumID)\n);\n Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not expalin it!",
+  "questionResults": [
+    {
+      "question": "How many people are in the database?",
+      "sql": "\nSELECT COUNT(*) FROM person;\n",
+      "queryRawResponse": "[(5,)]",
+      "friendlyResponse": "There are 5 people in the database.",
+      "error": "None"
+    },
+    {
+      "question": "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
+      "sql": "\nSELECT COUNT(*) as NumberOfPhotos\nFROM photo\nJOIN photoInAlbum ON photo.ID = photoInAlbum.photoID\nJOIN album ON photoInAlbum.albumID = album.ID\nWHERE album.albumName = 'Friends 2024'\nAND photo.deviceType = 'Samsung Galaxy S21';\n",
+      "queryRawResponse": "[(1,)]",
+      "friendlyResponse": "There is 1 photo in the Friends 2024 album shot on a Samsung Galaxy S21.",
+      "error": "None"
+    },
+    {
+      "question": "How many pictures did Bob Jones appear in?",
+      "sql": "\nSELECT COUNT(*) AS NumberOfPictures\nFROM personInPhoto\nJOIN person ON personInPhoto.personID = person.ID\nWHERE person.firstName = 'Bob' AND person.lastName = 'Jones';\n",
+      "queryRawResponse": "[(2,)]",
+      "friendlyResponse": "Bob Jones appeared in 2 pictures.",
+      "error": "None"
+    },
+    {
+      "question": "Who is the most popular?",
+      "sql": "\nSELECT person.ID, person.firstName, person.lastName, COUNT(personInPhoto.photoID) AS photoCount\nFROM person\nJOIN personInPhoto ON person.ID = personInPhoto.personID\nGROUP BY person.ID\nORDER BY photoCount DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[(1, 'Alice', 'Smith', 2)]",
+      "friendlyResponse": "The most popular person is Alice Smith.",
+      "error": "None"
+    },
+    {
+      "question": "Who is the best at taking group photos?",
+      "sql": "\nSELECT\n    p.firstName || ' ' || p.lastName AS personName,\n    COUNT(*) AS groupPhotoCount\nFROM\n    person AS p\nJOIN\n    personInPhoto AS pip ON pip.personID = p.ID\nJOIN\n    photo AS ph ON ph.ID = pip.photoID\nGROUP BY\n    p.ID\nHAVING\n    COUNT(DISTINCT pip.photoID) >= (SELECT COUNT(DISTINCT pip2.photoID)\n                                    FROM personInPhoto AS pip2\n                                    GROUP BY pip2.personID\n                                    ORDER BY COUNT(DISTINCT pip2.photoID) DESC\n                                    LIMIT 1)\nORDER BY\n    groupPhotoCount DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Emma Watson', 2)]",
+      "friendlyResponse": "It seems like Emma Watson might be good at taking group photos.",
+      "error": "None"
+    }
+  ]
+}

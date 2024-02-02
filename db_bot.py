@@ -72,10 +72,12 @@ strategies = {
     #                commonSqlOnlyRequest)
 }
 
-questions = [ # TODO: put in my own questions
+questions = [ # TODO: put in my own questions: possible double shot is who is the best at taking group photos
     "How many people are in the database?",
     "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
-    "How many pictures did Bob Jones appear in?"
+    "How many pictures did Bob Jones appear in?",
+    "Who is the most popular?",
+    "Who is the best at taking group photos?"
 ]
 
 def sanitizeForJustSql(value):

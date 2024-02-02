@@ -1,0 +1,34 @@
+{
+  "strategy": "zero_shot",
+  "prompt_prefix": "create table photoLocation (\n    ID integer primary key autoincrement,\n    longitude decimal(11,8) not null,\n    latitude decimal(11,8) not null\n);\n\ncreate table photo (\n\tID integer primary key autoincrement,\n    dateAndTime datetime,\n    locationID int,\n    deviceType varchar(20),\n    dataType varchar(6) not null,\n    foreign key (locationID) references photoLocation (ID)\n);\n\n\ncreate table person (\n    ID integer primary key autoincrement,\n    firstName varchar(20) not null,\n    lastName varchar(20) not null\n);\n\ncreate table personInPhoto (\n    personID int,\n    photoID int,\n    foreign key (personID) references person (ID),\n    foreign key (photoID) references photo (ID),\n    primary key (personID, photoID)\n);\n\ncreate table album (\n    ID integer primary key autoincrement,\n    albumName varchar(20) not null unique\n);\n\ncreate table photoInAlbum (\n    photoID int,\n    albumID int,\n    foreign key (photoID) references photo (ID),\n    foreign key (albumID) references album (ID),\n    primary key (photoID, albumID)\n);\n Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not expalin it!",
+  "questionResults": [
+    {
+      "question": "How many people are in the database?",
+      "sql": "\nSELECT COUNT(*) FROM person;\n",
+      "queryRawResponse": "[(5,)]",
+      "friendlyResponse": "There are 5 people in the database.",
+      "error": "None"
+    },
+    {
+      "question": "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
+      "sql": "\nSELECT COUNT(photo.ID) AS photo_count\nFROM photo\nJOIN photoInAlbum ON photo.ID = photoInAlbum.photoID\nJOIN album ON photoInAlbum.albumID = album.ID\nWHERE album.albumName = 'Friends 2024' AND photo.deviceType = 'Samsung Galaxy S21';\n",
+      "queryRawResponse": "[(1,)]",
+      "friendlyResponse": "There is 1 photo in the Friends 2024 album that was shot on a Samsung Galaxy S21.",
+      "error": "None"
+    },
+    {
+      "question": "How many pictures did Bob Jones appear in?",
+      "sql": "\nSELECT COUNT(photoID) as TotalPhotos\nFROM personInPhoto\nJOIN person ON person.ID = personInPhoto.personID\nWHERE person.firstName = 'Bob' AND person.lastName = 'Jones';\n",
+      "queryRawResponse": "[(2,)]",
+      "friendlyResponse": "Bob Jones appeared in 2 pictures.",
+      "error": "None"
+    },
+    {
+      "question": "Who is the most popular",
+      "sql": "\nSELECT \n    p.ID, \n    p.firstName, \n    p.lastName, \n    COUNT(pip.photoID) AS photoCount\nFROM \n    person p\nJOIN \n    personInPhoto pip ON p.ID = pip.personID\nGROUP BY \n    p.ID, \n    p.firstName, p.lastName\nORDER BY \n    photoCount DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[(1, 'Alice', 'Smith', 2)]",
+      "friendlyResponse": "The most popular person is Alice Smith with a popularity score of 2.",
+      "error": "None"
+    }
+  ]
+}
