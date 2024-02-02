@@ -1,11 +1,11 @@
 create table photoLocation (
-    ID int primary key auto_increment,
+    ID integer primary key autoincrement,
     longitude decimal(11,8) not null,
     latitude decimal(11,8) not null
 );
 
 create table photo (
-	ID int primary key auto_increment,
+	ID integer primary key autoincrement,
     dateAndTime datetime,
     locationID int,
     deviceType varchar(20),
@@ -15,7 +15,7 @@ create table photo (
 
 
 create table person (
-    ID int primary key auto_increment,
+    ID integer primary key autoincrement,
     firstName varchar(20) not null,
     lastName varchar(20) not null
 );
@@ -29,7 +29,7 @@ create table personInPhoto (
 );
 
 create table album (
-    ID int primary key auto_increment,
+    ID integer primary key autoincrement,
     albumName varchar(20) not null unique
 );
 
