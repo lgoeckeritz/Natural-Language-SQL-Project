@@ -5,7 +5,7 @@ import sqlite3
 from time import time
 
 print("Running db_bot.py!")
-
+print("test change to see how many places i can run this from")
 fdir = os.path.dirname(__file__)
 def getPath(fname):
     return os.path.join(fdir, fname)
