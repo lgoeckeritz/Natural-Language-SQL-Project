@@ -73,7 +73,9 @@ strategies = {
 }
 
 questions = [ # TODO: put in my own questions
-    "How many people are in the database?"
+    "How many people are in the database?",
+    "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
+    "How many pictures did Bob Jones appear in?"
 ]
 
 def sanitizeForJustSql(value):
