@@ -1,17 +1,18 @@
+create table photoLocation (
+    ID int primary key auto_increment,
+    longitude decimal(10,8) not null,
+    latitude decimal(11,8) not null
+);
+
 create table photo (
 	ID int primary key auto_increment,
     dateAndTime datetime,
     locationID int,
     deviceType varchar(20),
     dataType varchar(6) not null,
-    foreign key (locationID) references location (ID)
+    foreign key (locationID) references photoLocation (ID)
 );
 
-create table location (
-    ID int primary key auto_increment,
-    longitude decimal(10,8) not null,
-    latitude decimal(11,8) not null
-);
 
 create table person (
     ID int primary key auto_increment,
