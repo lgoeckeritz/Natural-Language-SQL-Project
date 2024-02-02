@@ -39,6 +39,3 @@ create table photoInAlbum (
     foreign key (albumID) references album (ID),
     primary key (photoID, albumID)
 );
-
-
-
