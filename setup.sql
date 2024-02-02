@@ -1,6 +1,6 @@
 create table photoLocation (
     ID int primary key auto_increment,
-    longitude decimal(10,8) not null,
+    longitude decimal(11,8) not null,
     latitude decimal(11,8) not null
 );
 
