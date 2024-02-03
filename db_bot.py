@@ -73,11 +73,14 @@ strategies = {
 }
 
 questions = [ # TODO: put in my own questions: possible double shot is who is the best at taking group photos
-    "How many people are in the database?",
-    "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
-    "How many pictures did Bob Jones appear in?",
-    "Who is the most popular?",
-    "Who is the best at taking group photos?"
+    # "How many people are in the database?",
+    # "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
+    # "How many pictures did Bob Jones appear in?",
+    # "Who is the most popular?"
+    # "Which two photos are the most similar?", this one broke the program, couldn't return an answer
+    # "Which photos were taken the furthest apart?",
+    # "Who is the most photogenic?"
+    "Which person or people stay up the latest?"
 ]
 
 def sanitizeForJustSql(value):
