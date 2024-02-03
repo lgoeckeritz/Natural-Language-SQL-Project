@@ -73,11 +73,12 @@ strategies = {
 }
 
 questions = [ # TODO: put in my own questions: possible double shot is who is the best at taking group photos
-    "How many people are in the database?",
-    "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
-    "How many pictures did Bob Jones appear in?",
-    "Who is the most popular?",
-    "Who is the best at taking group photos?"
+    # "How many people are in the database?",
+    # "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
+    # "How many pictures did Bob Jones appear in?",
+    # "Who is the most popular?",
+    # "Who is the best at taking group photos?"
+    "David lee and Emma watson are always involved in pictures of each other. If there is a picture of emma without david lee, that means that david took the picture. If there is a picture of david without emma, then emma took the picture. If both david and emma are in a picture, then david took the picture. Between david and emma, who took more pictures?"
 ]
 
 def sanitizeForJustSql(value):
