@@ -33,7 +33,9 @@ INSERT INTO personInPhoto (personID, photoID) VALUES
 (2, 3),
 (3, 4),
 (4, 5),
-(5, 1);
+(5, 1),
+(5, 2),
+(5, 3);
 
 -- Insert some sample data into the album table
 INSERT INTO album (albumName) VALUES
