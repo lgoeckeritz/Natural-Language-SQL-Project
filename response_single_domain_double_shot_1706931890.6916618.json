@@ -1,0 +1,55 @@
+{
+  "strategy": "single_domain_double_shot",
+  "prompt_prefix": "create table photoLocation (\n    ID integer primary key autoincrement,\n    longitude decimal(11,8) not null,\n    latitude decimal(11,8) not null\n);\n\ncreate table photo (\n\tID integer primary key autoincrement,\n    dateAndTime datetime,\n    locationID int,\n    deviceType varchar(20),\n    dataType varchar(6) not null,\n    foreign key (locationID) references photoLocation (ID)\n);\n\n\ncreate table person (\n    ID integer primary key autoincrement,\n    firstName varchar(20) not null,\n    lastName varchar(20) not null\n);\n\ncreate table personInPhoto (\n    personID int,\n    photoID int,\n    foreign key (personID) references person (ID),\n    foreign key (photoID) references photo (ID),\n    primary key (personID, photoID)\n);\n\ncreate table album (\n    ID integer primary key autoincrement,\n    albumName varchar(20) not null unique\n);\n\ncreate table photoInAlbum (\n    photoID int,\n    albumID int,\n    foreign key (photoID) references photo (ID),\n    foreign key (albumID) references album (ID),\n    primary key (photoID, albumID)\n);\n How many unique people has Emma Watson appeard in photos with? \nSELECT COUNT(DISTINCT pip.personID) AS unique_people_with_emma_watson\nFROM personInPhoto pip\nJOIN person p ON pip.personID = p.ID\nWHERE pip.photoID IN (\n    SELECT photoID FROM personInPhoto WHERE personID = (\n        SELECT ID FROM person WHERE firstName = 'Emma' AND lastName = 'Watson'\n    )\n)\nAND p.ID != (\n    SELECT ID FROM person WHERE firstName = 'Emma' AND lastName = 'Watson'\n);\n Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not expalin it!",
+  "questionResults": [
+    {
+      "question": "How many people are in the database?",
+      "sql": "SELECT COUNT(DISTINCT personID) - 1 AS unique_people_with_emma_watson\nFROM personInPhoto\nWHERE photoID IN (\n    SELECT photoID \n    FROM personInPhoto\n    WHERE personID = (\n        SELECT ID FROM person WHERE firstName = 'Emma' AND lastName = 'Watson'\n    )\n)\nAND personID != (\n    SELECT ID FROM person WHERE firstName = 'Emma' AND lastName = 'Watson'\n);\n\nSELECT COUNT(*) FROM person;",
+      "queryRawResponse": "[(4,)]",
+      "friendlyResponse": "Emma Watson has appeared in photos with 4 unique people.",
+      "error": "You can only execute one statement at a time."
+    },
+    {
+      "question": "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
+      "sql": "\nSELECT COUNT(DISTINCT pip.personID) - 1 AS unique_people_with_emma_watson\nFROM personInPhoto pip\nJOIN person p ON pip.personID = p.ID\nWHERE pip.photoID IN (\n    SELECT pip2.photoID\n    FROM personInPhoto pip2\n    JOIN person p2 ON pip2.personID = p2.ID\n    WHERE p2.firstName = 'Emma' AND p2.lastName = 'Watson'\n);\n\nSELECT COUNT(*) AS number_of_photos\nFROM photo\nJOIN photoInAlbum ON photo.ID = photoInAlbum.photoID\nJOIN album ON photoInAlbum.albumID = album.ID\nWHERE album.albumName = 'Friends 2024'\nAND photo.deviceType = 'Samsung Galaxy S21';\n",
+      "queryRawResponse": "[(4,)]",
+      "friendlyResponse": "Emma Watson has appeared in photos with 4 unique people.",
+      "error": "You can only execute one statement at a time."
+    },
+    {
+      "question": "How many pictures did Bob Jones appear in?",
+      "sql": "\nSELECT COUNT(DISTINCT photoID) AS bob_jones_photo_count\nFROM personInPhoto\nWHERE personID = (\n    SELECT ID FROM person WHERE firstName = 'Bob' AND lastName = 'Jones'\n);\n",
+      "queryRawResponse": "[(2,)]",
+      "friendlyResponse": "Bob Jones appeared in 2 pictures.",
+      "error": "None"
+    },
+    {
+      "question": "Who is the most popular?",
+      "sql": "\nSELECT COUNT(DISTINCT pip_other.personID) AS unique_people_with_emma_watson\nFROM personInPhoto pip_emma\nJOIN personInPhoto pip_other ON pip_emma.photoID = pip_other.photoID\nJOIN person p_emma on pip_emma.personID = p_emma.ID\nWHERE \n    p_emma.firstName = 'Emma' AND p_emma.lastName = 'Watson'\n    AND pip_other.personID != pip_emma.personID;\n",
+      "queryRawResponse": "[(4,)]",
+      "friendlyResponse": "Certainly, the individual with the identifier \"4\" is the most popular based on the context you've provided.",
+      "error": "None"
+    },
+    {
+      "question": "Who is the best at taking group photos?",
+      "sql": "\nSELECT COUNT(DISTINCT pip_other.personID) AS unique_people_with_emma_watson\nFROM personInPhoto pip_emma\nJOIN personInPhoto pip_other ON pip_emma.photoID = pip_other.photoID\nAND pip_emma.personID <> pip_other.personID\nJOIN person p_emma ON pip_emma.personID = p_emma.ID\nJOIN person p_other ON pip_other.personID = p_other.ID\nWHERE p_emma.firstName = 'Emma' AND p_emma.lastName = 'Watson';\n",
+      "queryRawResponse": "[(4,)]",
+      "friendlyResponse": "It's difficult to determine who is \"the best\" at taking group photos as it can depend on various factors including skill, experience, creativity, and personal preference. Typically, a professional photographer or someone with a lot of experience in photography would be great at taking group photos.",
+      "error": "None"
+    },
+    {
+      "question": "David lee and Emma watson are always involved in pictures of each other. If there is a picture of emma without david lee, that means that david took the picture. If there is a picture of david without emma, then emma took the picture. If both david and emma are in a picture, then david took the picture. Between david and emma, who took more pictures?",
+      "sql": "\nSELECT\n    (SELECT COUNT(*) FROM (\n        SELECT pip.photoID FROM personInPhoto pip\n        JOIN person p ON pip.personID = p.ID\n        WHERE p.firstName = 'Emma' AND p.lastName = 'Watson'\n        AND pip.photoID NOT IN (\n            SELECT photoID FROM personInPhoto WHERE personID = (\n                SELECT ID FROM person WHERE firstName = 'David' AND lastName = 'Lee'\n            )\n        )\n    )) AS EmmaPhotos,\n    (SELECT COUNT(*) FROM (\n        SELECT pip.photoID FROM personInPhoto pip\n        JOIN person p ON pip.personID = p.ID\n        WHERE p.firstName = 'David' AND p.lastName = 'Lee'\n        AND pip.photoID NOT IN (\n            SELECT photoID FROM personInPhoto WHERE personID = (\n                SELECT ID FROM person WHERE firstName = 'Emma' AND lastName = 'Watson'\n            )\n        )\n        UNION\n        SELECT pip.photoID FROM personInPhoto pip\n        JOIN personInPhoto pip2 ON pip.photoID = pip2.photoID\n        WHERE pip.personID = (\n            SELECT ID FROM person WHERE firstName = 'Emma' AND lastName = 'Watson'\n        )\n        AND pip2.personID = (\n            SELECT ID FROM person WHERE firstName = 'David' AND lastName = 'Lee'\n        )\n    )) AS DavidPhotos\nHAVING DavidPhotos > EmmaPhotos;\n",
+      "queryRawResponse": "[(4,)]",
+      "friendlyResponse": "It's difficult to determine who is \"the best\" at taking group photos as it can depend on various factors including skill, experience, creativity, and personal preference. Typically, a professional photographer or someone with a lot of experience in photography would be great at taking group photos.",
+      "error": "HAVING clause on a non-aggregate query"
+    },
+    {
+      "question": "How many unique people has Emma Watson appeard in photos with?",
+      "sql": "\nSELECT COUNT(DISTINCT pip_other.personID) AS unique_people_with_emma_watson\nFROM personInPhoto pip_ew\nJOIN personInPhoto pip_other ON pip_ew.photoID = pip_other.photoID\nJOIN person p ON pip_other.personID = p.ID\nWHERE pip_ew.personID = (\n    SELECT ID FROM person WHERE firstName = 'Emma' AND lastName = 'Watson'\n)\nAND pip_other.personID != pip_ew.personID;\n",
+      "queryRawResponse": "[(4,)]",
+      "friendlyResponse": "Emma Watson has appeared in photos with four unique people.",
+      "error": "None"
+    }
+  ]
+}

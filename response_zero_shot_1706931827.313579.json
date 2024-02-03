@@ -1,0 +1,55 @@
+{
+  "strategy": "zero_shot",
+  "prompt_prefix": "create table photoLocation (\n    ID integer primary key autoincrement,\n    longitude decimal(11,8) not null,\n    latitude decimal(11,8) not null\n);\n\ncreate table photo (\n\tID integer primary key autoincrement,\n    dateAndTime datetime,\n    locationID int,\n    deviceType varchar(20),\n    dataType varchar(6) not null,\n    foreign key (locationID) references photoLocation (ID)\n);\n\n\ncreate table person (\n    ID integer primary key autoincrement,\n    firstName varchar(20) not null,\n    lastName varchar(20) not null\n);\n\ncreate table personInPhoto (\n    personID int,\n    photoID int,\n    foreign key (personID) references person (ID),\n    foreign key (photoID) references photo (ID),\n    primary key (personID, photoID)\n);\n\ncreate table album (\n    ID integer primary key autoincrement,\n    albumName varchar(20) not null unique\n);\n\ncreate table photoInAlbum (\n    photoID int,\n    albumID int,\n    foreign key (photoID) references photo (ID),\n    foreign key (albumID) references album (ID),\n    primary key (photoID, albumID)\n);\n Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not expalin it!",
+  "questionResults": [
+    {
+      "question": "How many people are in the database?",
+      "sql": "\nSELECT COUNT(*) FROM person;\n",
+      "queryRawResponse": "[(5,)]",
+      "friendlyResponse": "There are 5 people in the database.",
+      "error": "None"
+    },
+    {
+      "question": "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
+      "sql": "\nSELECT COUNT(p.ID) as NumberOfPhotos\nFROM photo p\nJOIN photoInAlbum pa ON p.ID = pa.photoID\nJOIN album a ON pa.albumID = a.ID\nWHERE a.albumName = 'Friends 2024' AND p.deviceType = 'Samsung Galaxy S21';\n",
+      "queryRawResponse": "[(1,)]",
+      "friendlyResponse": "There was 1 photo in the Friends 2024 album shot on a Samsung Galaxy S21.",
+      "error": "None"
+    },
+    {
+      "question": "How many pictures did Bob Jones appear in?",
+      "sql": "\nSELECT COUNT(*) as NumberOfPictures\nFROM person\nJOIN personInPhoto ON person.ID = personInPhoto.personID\nJOIN photo ON personInPhoto.photoID = photo.ID\nWHERE firstName = 'Bob' AND lastName = 'Jones';\n",
+      "queryRawResponse": "[(2,)]",
+      "friendlyResponse": "Bob Jones appeared in 2 pictures.",
+      "error": "None"
+    },
+    {
+      "question": "Who is the most popular?",
+      "sql": "\nSELECT person.firstName, person.lastName, COUNT(*) as photoCount\nFROM person\nJOIN personInPhoto ON person.ID = personInPhoto.personID\nGROUP BY person.ID\nORDER BY photoCount DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Emma', 'Watson', 4)]",
+      "friendlyResponse": "Emma Watson is the most popular.",
+      "error": "None"
+    },
+    {
+      "question": "Who is the best at taking group photos?",
+      "sql": "\nSELECT p.firstName, p.lastName, COUNT(*) AS numberOfGroupPhotos\nFROM person p\nJOIN personInPhoto pip ON p.ID = pip.personID\nJOIN (\n    SELECT photoID\n    FROM personInPhoto\n    GROUP BY photoID\n    HAVING COUNT(personID) > 1\n) groupedPhotos ON pip.photoID = groupedPhotos.photoID\nGROUP BY p.firstName, p.lastName\nORDER BY numberOfGroupPhotos DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Emma', 'Watson', 4)]",
+      "friendlyResponse": "Emma Watson is the best at taking group photos.",
+      "error": "None"
+    },
+    {
+      "question": "David lee and Emma watson are always involved in pictures of each other. If there is a picture of emma without david lee, that means that david took the picture. If there is a picture of david without emma, then emma took the picture. If both david and emma are in a picture, then david took the picture. Between david and emma, who took more pictures?",
+      "sql": "\nSELECT Photographer.firstName, Photographer.lastName,\n       COUNT(Photographer.ID) AS NumberOfPhotos\n  FROM (\n    SELECT person.ID, person.firstName, person.lastName, photo.ID AS photoID\n      FROM person\n      JOIN personInPhoto ON person.ID = personInPhoto.personID\n      JOIN photo ON photo.ID = personInPhoto.photoID\n     WHERE person.firstName = 'David' AND person.lastName = 'Lee'\n\n    UNION ALL\n\n    SELECT person.ID, person.firstName, person.lastName, photo.ID AS photoID\n      FROM person\n      JOIN personInPhoto ON person.ID = personInPhoto.personID\n      JOIN photo ON photo.ID = personInPhoto.photoID\n     WHERE person.firstName = 'Emma' AND person.lastName = 'Watson'\n       AND photo.ID NOT IN (\n         SELECT photo.ID\n           FROM photo\n           JOIN personInPhoto ON personInPhoto.photoID = photo.ID\n           JOIN person ON person.ID = personInPhoto.personID\n          WHERE person.firstName = 'David' AND person.lastName = 'Lee'\n       )\n  ) AS Photographer\nGROUP BY Photographer.ID\nORDER BY NumberOfPhotos DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Emma', 'Watson', 3)]",
+      "friendlyResponse": "David took more pictures.",
+      "error": "None"
+    },
+    {
+      "question": "How many unique people has Emma Watson appeard in photos with?",
+      "sql": "\nSELECT COUNT(DISTINCT pp.personID) AS NumberOfUniquePeople\nFROM person p\nJOIN personInPhoto pip ON p.ID = pip.personID\nJOIN personInPhoto pp ON pip.photoID = pp.photoID\nWHERE p.firstName = 'Emma' AND p.lastName = 'Watson' AND pp.personID != p.ID;\n",
+      "queryRawResponse": "[(4,)]",
+      "friendlyResponse": "Emma Watson has appeared in photos with 4 unique people.",
+      "error": "None"
+    }
+  ]
+}
