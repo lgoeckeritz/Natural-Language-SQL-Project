@@ -65,20 +65,21 @@ def getChatGptResponse(content):
 # strategies TODO: put in my own single_domain_double_shot
 commonSqlOnlyRequest = " Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not expalin it!"
 strategies = {
-    "zero_shot": setupSqlScript + commonSqlOnlyRequest
-    # "single_domain_double_shot": (setupSqlScript + 
-    #                " Who doesn't have a way for us to text them? " + 
-    #                " \nSELECT p.person_id, p.name\nFROM person p\nLEFT JOIN phone ph ON p.person_id = ph.person_id AND ph.can_recieve_sms = 1\nWHERE ph.phone_id IS NULL;\n " +
-    #                commonSqlOnlyRequest)
+    "zero_shot": setupSqlScript + commonSqlOnlyRequest,
+    "single_domain_double_shot": (setupSqlScript + 
+                   " How many unique people has Emma Watson appeard in photos with? " + 
+                   "\nSELECT COUNT(DISTINCT pip.personID) AS unique_people_with_emma_watson\nFROM personInPhoto pip\nJOIN person p ON pip.personID = p.ID\nWHERE pip.photoID IN (\n    SELECT photoID FROM personInPhoto WHERE personID = (\n        SELECT ID FROM person WHERE firstName = 'Emma' AND lastName = 'Watson'\n    )\n)\nAND p.ID != (\n    SELECT ID FROM person WHERE firstName = 'Emma' AND lastName = 'Watson'\n);\n" +
+                   commonSqlOnlyRequest)
 }
 
 questions = [ # TODO: put in my own questions: possible double shot is who is the best at taking group photos
-    # "How many people are in the database?",
-    # "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
-    # "How many pictures did Bob Jones appear in?",
-    # "Who is the most popular?",
-    # "Who is the best at taking group photos?"
-    "David lee and Emma watson are always involved in pictures of each other. If there is a picture of emma without david lee, that means that david took the picture. If there is a picture of david without emma, then emma took the picture. If both david and emma are in a picture, then david took the picture. Between david and emma, who took more pictures?"
+    "How many people are in the database?",
+    "How many photos in the Friends 2024 album were shot on a Samsung Galaxy S21?",
+    "How many pictures did Bob Jones appear in?",
+    "Who is the most popular?",
+    "Who is the best at taking group photos?",
+    "David lee and Emma watson are always involved in pictures of each other. If there is a picture of emma without david lee, that means that david took the picture. If there is a picture of david without emma, then emma took the picture. If both david and emma are in a picture, then david took the picture. Between david and emma, who took more pictures?",
+    "How many unique people has Emma Watson appeard in photos with?"
 ]
 
 def sanitizeForJustSql(value):
